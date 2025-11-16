@@ -35,6 +35,30 @@ public class Lexer {
                 continue;
             }
 
+            if (c == '\"') {
+                s.append(c);
+                s.append(readString(c));
+                s.append(c);
+                position++;
+
+                tokens.add(new Token(TokenType.STRING, s.toString()));
+
+                s.setLength(0);
+                continue;
+            }
+
+            if (c == '\'') {
+                s.append(c);
+                s.append(readCharacter(c));
+                s.append(c);
+                position++;
+
+                tokens.add(new Token(TokenType.CHARACTER, s.toString()));
+
+                s.setLength(0);
+                continue;
+            }
+
             if (isLetter(c)) {
                 s.append(c);
 
@@ -48,49 +72,10 @@ public class Lexer {
                 String value = s.toString();
 
                 switch (value) {
-                    case "integer" -> {
-                        tokens.add(new Token(TokenType.TYPE, value));
+                    case "return", "if", "otherwise", "afterall", "for", "while", "break", "continue", "public",
+                            "private", "static", "protected" -> {
+                        tokens.add(new Token(TokenType.KEYWORD, value));
 
-                        break;
-                    }
-
-                    case "double" -> {
-                        tokens.add(new Token(TokenType.TYPE, value));
-
-                        break;
-                    }
-
-                    case "String" -> {
-                        tokens.add(new Token(TokenType.TYPE, value));
-
-                        break;
-                    }
-
-                    case "public" -> {
-                        tokens.add(new Token(TokenType.MODIFIER, value));
-
-                        position++;
-                        break;
-                    }
-
-                    case "protected" -> {
-                        tokens.add(new Token(TokenType.MODIFIER, value));
-
-                        position++;
-                        break;
-                    }
-
-                    case "private" -> {
-                        tokens.add(new Token(TokenType.MODIFIER, value));
-
-                        position++;
-                        break;
-                    }
-
-                    case "return" -> {
-                        tokens.add(new Token(TokenType.RETURN));
-
-                        position++;
                         break;
                     }
 
@@ -129,104 +114,158 @@ public class Lexer {
             }
 
             switch (c) {
-                case ',' -> {
-                    tokens.add(new Token(TokenType.SEPARATOR));
+                case '@' -> {
+                    tokens.add(new Token(TokenType.AT));
+                    break;
+                }
 
-                    position++;
+                case ',' -> {
+                    tokens.add(new Token(TokenType.COMMA));
+
                     break;
                 }
 
                 case '=' -> {
+                    if (hasNext()) {
+                        tokens.add(new Token(TokenType.DOUBLEEQUAL));
+                        position++;
+
+                        break;
+                    }
+
                     tokens.add(new Token(TokenType.ASSIGNMENT));
 
-                    position++;
                     break;
                 }
 
                 case '+' -> {
+                    if (hasNext()) {
+                        tokens.add(new Token(TokenType.INCREMENT));
+                        position++;
+
+                        break;
+                    }
+
                     tokens.add(new Token(TokenType.PLUS));
 
-                    position++;
                     break;
                 }
 
                 case '-' -> {
+                    if (hasNext()) {
+                        tokens.add(new Token(TokenType.DECREMENT));
+                        position++;
+
+                        break;
+                    }
+
                     tokens.add(new Token(TokenType.MINUS));
 
-                    position++;
                     break;
                 }
 
                 case '*' -> {
                     tokens.add(new Token(TokenType.MULTIPLY));
 
-                    position++;
                     break;
                 }
 
                 case '/' -> {
                     tokens.add(new Token(TokenType.DIVISION));
 
-                    position++;
                     break;
                 }
 
                 case '%' -> {
                     tokens.add(new Token(TokenType.REMAINDER));
 
-                    position++;
                     break;
                 }
 
                 case ';' -> {
                     tokens.add(new Token(TokenType.SEMICOLON));
-                    position++;
 
                     break;
                 }
 
                 case '(' -> {
                     tokens.add(new Token(TokenType.LPAREN));
-                    position++;
 
                     break;
                 }
 
                 case ')' -> {
                     tokens.add(new Token(TokenType.RPAREN));
-                    position++;
 
                     break;
                 }
 
                 case '{' -> {
                     tokens.add(new Token(TokenType.LBRACE));
-                    position++;
 
                     break;
                 }
 
                 case '}' -> {
                     tokens.add(new Token(TokenType.RBRACE));
-                    position++;
 
                     break;
                 }
 
                 case '[' -> {
                     tokens.add(new Token(TokenType.LBRACKET));
-                    position++;
 
                     break;
                 }
 
                 case ']' -> {
                     tokens.add(new Token(TokenType.RBRACKET));
-                    position++;
 
                     break;
                 }
 
+                case '>' -> {
+                    if (hasNext()) {
+                        tokens.add(new Token(TokenType.GTE));
+                        position++;
+
+                        break;
+                    }
+
+                    tokens.add(new Token(TokenType.GT));
+                    break;
+                }
+
+                case '<' -> {
+                    if (hasNext()) {
+                        tokens.add(new Token(TokenType.LTE));
+                        position++;
+
+                        break;
+                    }
+
+                    tokens.add(new Token(TokenType.LT));
+
+                    break;
+                }
+
+                case '.' -> {
+                    tokens.add(new Token(TokenType.DOT));
+
+                    break;
+                }
+
+                case ':' -> {
+                    tokens.add(new Token(TokenType.COLON));
+
+                    break;
+                }
+
+                case '!' -> {
+                    tokens.add(new Token(TokenType.BANG));
+
+                    break;
+                }
                 /*
                  * --- base ---
                  * 
@@ -249,9 +288,72 @@ public class Lexer {
                 }
 
             }
+
+            position++;
         }
 
         return tokens;
+
+    }
+
+    private String readCharacter(char cAtual) {
+        StringBuilder s = new StringBuilder();
+
+        position++;
+        char c = source.charAt(position);
+
+        while (c != '\'') {
+            if (c == '\\') {
+                position++;
+                if (position >= source.length()) {
+                    throw new RuntimeException("String não fechada: fim de arquivo inesperado");
+                }
+                char escaped = source.charAt(position);
+                s.append('\\').append(escaped);
+            } else {
+                s.append(c);
+            }
+
+            position++;
+
+            if (position >= source.length()) {
+                throw new RuntimeException("String não fechada: fim de arquivo inesperado");
+            }
+
+            c = source.charAt(position);
+        }
+
+        return s.toString();
+    }
+
+    private String readString(char cAtual) {
+        StringBuilder s = new StringBuilder();
+
+        position++;
+        char c = source.charAt(position);
+
+        while (c != '\"') {
+            if (c == '\\') {
+                position++;
+                if (position >= source.length()) {
+                    throw new RuntimeException("String não fechada: fim de arquivo inesperado");
+                }
+                char escaped = source.charAt(position);
+                s.append('\\').append(escaped);
+            } else {
+                s.append(c);
+            }
+
+            position++;
+
+            if (position >= source.length()) {
+                throw new RuntimeException("String não fechada: fim de arquivo inesperado");
+            }
+
+            c = source.charAt(position);
+        }
+
+        return s.toString();
     }
 
     private boolean isLetter(char c) {
@@ -299,7 +401,12 @@ public class Lexer {
 
         char c = source.charAt(position + 1);
 
-        return isLetter(c) || isDigit(c);
+        return isLetter(c) || isDigit(c) || isLogical(c);
+    }
+
+    private boolean isLogical(char c) {
+
+        return c == '=' || c == '-' || c == '+' || c == '>';
     }
 
     /*

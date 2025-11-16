@@ -2,17 +2,44 @@ package org.klang.core.lexer;
 
 public enum TokenType {
 
-    // @Use()
-    USELANGUAGE,
+    // @
+    AT,
 
-    TYPE, IDENTIFIER, NUMBER, ASSIGNMENT, SEMICOLON, RETURN,
+    IDENTIFIER, NUMBER, STRING, CHARACTER, ASSIGNMENT, RETURN, KEYWORD,
 
     // Operações
-    PLUS, MINUS, MULTIPLY, DIVISION, POWER, REMAINDER,
+    PLUS, INCREMENT, MINUS, DECREMENT, MULTIPLY, DIVISION, POWER, REMAINDER,
 
     // Delimitadores {} -> breaces [] -> brackets
-    LPAREN, RPAREN, SEPARATOR, LBRACE, RBRACE, LBRACKET, RBRACKET,
+    LPAREN, RPAREN, COMMA, LBRACE, RBRACE, LBRACKET, RBRACKET, SEMICOLON, COLON, DOT,
 
-    // Métodos
-    MODIFIER, RETURNTYPE, ARGUMENT, METHOD
+    BANG, LT, GT, LTE, GTE, DOUBLEEQUAL, NOTEQUAL, ARROW,
 }
+
+/*
+ * LPAREN (
+ * RPAREN )
+ * LBRACE {
+ * RBRACE }
+ * LBRACKET [
+ * RBRACKET ]
+ * COMMA ,
+ * SEMICOLON ;
+ * COLON :
+ * DOT .
+ * PLUS +
+ * MINUS -
+ * STAR *
+ * SLASH /
+ * PERCENT %
+ * EQUAL =
+ * BANG !
+ * LT <
+ * GT >
+ * LTE <=
+ * GTE >=
+ * DOUBLEEQUAL ==
+ * NOTEQUAL !=
+ * ARROW ->
+ * 
+ */
