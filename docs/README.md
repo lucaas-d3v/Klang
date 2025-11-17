@@ -5,7 +5,7 @@ Designed and developed by ~K’, Klang aims to provide a predictable, minimal an
 
 ---
 
-## 🚀 Vision
+## Vision
 
 Klang is built to:
 
@@ -18,7 +18,7 @@ Klang is built to:
 
 ---
 
-## ⚙️ Philosophy
+## Philosophy
 
 - readability first  
 - deterministic behavior  
@@ -28,7 +28,7 @@ Klang is built to:
 
 ---
 
-## 💡 Example Syntax
+## Example Syntax
 
 ```k
 if (x > 0) {
@@ -40,7 +40,7 @@ if (x > 0) {
 
 ---
 
-## 🧩 Project Structure
+## Project Structure
 
 ```
 Klang/
@@ -54,7 +54,7 @@ Klang/
 
 ---
 
-## 🛠️ Roadmap
+## Roadmap
 
 * [ ] Stable lexer
 * [ ] Parser + AST
@@ -68,7 +68,7 @@ Current priority: **lexer → parser → AST**.
 
 ---
 
-## 📄 License
+## License
 
 Klang is licensed under the **Apache License 2.0**.
 You are free to use, modify, and distribute this software — including commercially — as long as you preserve the copyright and license notices.
@@ -77,7 +77,7 @@ See the `LICENSE` file for details.
 
 ---
 
-## 🤝 Contributing
+## Contributing
 
 Contributions are welcome, especially in compiler architecture, AST modeling, runtime design, and documentation.
 
@@ -89,7 +89,7 @@ Use issues to discuss design questions, syntax proposals, and roadmap progressio
 
 ---
 
-## 📬 Author
+## Author
 
 Created and maintained by **~K' (Lucas Paulino da Silva)**
 Klang © 2025 — Apache-2.0
