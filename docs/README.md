@@ -1,93 +1,95 @@
 # Klang — A Polyglot Programming Language
 
-Klang é uma linguagem experimental focada em **clareza**, **consistência semântica** e **interoperabilidade real entre linguagens**.  
-Criada por ~K', a Klang busca oferecer uma sintaxe moderna e previsível, inspirada em Java e Python, mantendo uma base sólida para evolução do compilador.
+Klang is an experimental programming language focused on **clarity**, **deterministic semantics**, and **real polyglot interoperability**.  
+Designed and developed by ~K’, Klang aims to provide a predictable, minimal and expressive syntax while enabling modules to target multiple language backends.
 
 ---
 
-## 🚀 Visão
+## 🚀 Vision
 
-A Klang nasce para:
+Klang is built to:
 
-- Ser uma **linguagem poliglota real**, interoperando diretamente com Java, Python, Go, Rust e C.  
-- Oferecer sintaxe simples, minimalista e expressiva.  
-- Permitir que cada módulo escolha sua **linguagem-alvo** ideal sem perder coesão.  
-- Servir como ponte entre ecossistemas, não como substituta deles.
+- provide a simple and predictable syntax,
+- enable direct interoperability with Java, Python, Go, Rust, and C,
+- support modular compilation and controlled transpilation,
+- act as a bridge between ecosystems rather than a competitor.
 
-> Klang existe para interligar linguagens — não competir com elas.
-
----
-
-## ⚙️ Filosofia
-
-- **Legibilidade acima de tudo**  
-- **Semântica determinística**  
-- **Módulos transpiláveis isolados**  
-- **Interop como fundamento do design**
+> Klang exists to connect languages — not to replace them.
 
 ---
 
-## 💡 Exemplo de Sintaxe
+## ⚙️ Philosophy
+
+- readability first  
+- deterministic behavior  
+- minimal and explicit syntax  
+- isolated transpilation units  
+- polyglot by design  
+
+---
+
+## 💡 Example Syntax
 
 ```k
 if (x > 0) {
-    println("Positivo");
+    println("Positive");
 } afterall {
-    println("Negativo ou zero");
+    println("Zero or negative");
 }
 ````
 
 ---
 
-## 🧩 Estrutura do Projeto
+## 🧩 Project Structure
 
 ```
-klang/
-├── docs/        # Documentação e especificação
-├── src/         # Lexer, parser, AST, transpilers
-├── examples/    # Exemplos de uso
-├── tests/       # Testes de unidade e integração
-└── LICENSE      # Apache-2.0
+Klang/
+├── cli/          # Klang CLI
+├── core/         # Lexer, parser, AST, transpilers
+├── docs/         # Language specification and design notes
+├── examples/     # Usage examples and samples
+├── stdlib/       # Standard library modules
+└── LICENSE       # Apache-2.0
 ```
 
 ---
 
-## 📌 Roadmap
+## 🛠️ Roadmap
 
-* [ ] Lexer estável
+* [ ] Stable lexer
 * [ ] Parser + AST
-* [ ] Transpiler Java
-* [ ] CLI (build/run/transpile)
-* [ ] Documentação da sintaxe v1
-* [ ] Interoperabilidade modular
-* [ ] Runtime básico
+* [ ] Java transpiler
+* [ ] CLI (build / run / transpile)
+* [ ] Syntax specification v1
+* [ ] Modular interoperability
+* [ ] Basic runtime
 
-Prioridade atual: **lexer → parser → AST**.
-
----
-
-## 📄 Licença
-
-Este projeto é licenciado sob a **Apache License 2.0**.
-Você pode usar, modificar e distribuir livremente o software, inclusive para fins comerciais, desde que preserve os avisos de copyright e a licença.
-
-Para detalhes completos, consulte o arquivo `LICENSE`.
+Current priority: **lexer → parser → AST**.
 
 ---
 
-## 🤝 Contribuindo
+## 📄 License
 
-Contribuições são bem-vindas — especialmente em áreas como compiladores, AST, runtime e documentação.
+Klang is licensed under the **Apache License 2.0**.
+You are free to use, modify, and distribute this software — including commercially — as long as you preserve the copyright and license notices.
 
-1. Faça um fork
-2. Crie uma branch (`feature/nome`)
-3. Abra um Pull Request
-
-Issues são bem-vindas para discussão de design e roadmap.
+See the `LICENSE` file for details.
 
 ---
 
-## 📬 Autor
+## 🤝 Contributing
 
-Criado e mantido por **~K' (Lucas Paulino da Silva)**
+Contributions are welcome, especially in compiler architecture, AST modeling, runtime design, and documentation.
+
+1. Fork the repository
+2. Create a feature branch (`feature/name`)
+3. Open a pull request
+
+Use issues to discuss design questions, syntax proposals, and roadmap progression.
+
+---
+
+## 📬 Author
+
+Created and maintained by **~K' (Lucas Paulino da Silva)**
 Klang © 2025 — Apache-2.0
