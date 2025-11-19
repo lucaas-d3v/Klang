@@ -131,6 +131,7 @@ public class Lexer {
                 }
 
                 case '-' -> {
+		    // Cache the next character to avoid consuming it multiple times
 		    char next = getNext();
 
                     if (next == '-') {
