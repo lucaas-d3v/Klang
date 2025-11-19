@@ -88,7 +88,7 @@ public class Lexer {
 
                 s.append(c);
 
-                while (hasNext()) {
+                while (hasNextDigit()) {
                     position++;
                     char demais = source.charAt(position);
 
@@ -103,14 +103,9 @@ public class Lexer {
                 continue;
             }
 
-            TokenType tokenType = tokensTypeByChar.getOrDefault(c, null);
-
-            if (tokenType == null) {
-                error("Caractere inesperado '" + c + "'", "Remova esse caractere ou corrija o token!",
-                        DiagnosticType.LEXICAL);
-            }
-
-            switch (c) {
+	    TokenType tokenType = tokensTypeByChar.getOrDefault(c, null);
+            
+	    switch (c) {
                 case '=' -> {
                     if (getNext() == '=') {
                         tokens.add(new Token(TokenType.DOUBLEEQUAL));
@@ -136,14 +131,16 @@ public class Lexer {
                 }
 
                 case '-' -> {
-                    if (getNext() == '-') {
+		    char next = getNext();
+
+                    if (next == '-') {
                         tokens.add(new Token(TokenType.DECREMENT));
                         position++;
 
                         continue;
                     }
 
-                    if (getNext() == '>') {
+                    if (next == '>') {
                         tokens.add(new Token(TokenType.ARROW));
                         position++;
 
@@ -154,6 +151,18 @@ public class Lexer {
                     tokens.add(new Token(tokenType));
                     continue;
                 }
+
+		case '*' -> {
+		   if (getNext() == c){
+			tokens.add(new Token(TokenType.POWER));
+
+			position++;
+			continue;
+		   }
+
+		   tokens.add(new Token(tokenType));
+		   continue;
+		}
 
                 case '>' -> {
                     if (getNext() == '=') {
@@ -179,6 +188,43 @@ public class Lexer {
                     continue;
                 }
 
+		case '!' -> {
+		    if (getNext() == '='){
+			tokens.add(new Token(TokenType.NOTEQUAL));
+			position++;
+
+			continue;
+		    }
+
+		    tokens.add(new Token(TokenType.BANG));
+		    continue;
+		}
+
+		case '&' -> {
+		    if (getNext() == c){
+			tokens.add(new Token(TokenType.AND));
+			position++;
+
+			continue;
+		    }
+
+		    error("Caractere \'" + c + "\' ineperado.", "Você quis dizer '&&'?", DiagnosticType.LEXICAL);
+		}
+
+		case '|' -> {
+                    if (getNext() == c){
+                        tokens.add(new Token(TokenType.OR));
+                        position++;
+
+			continue;
+		    }
+
+                    error("Caractere \'" + c + "\' ineperado.", "Você quis dizer '|'?", DiagnosticType.LEXICAL);
+                }
+            }
+
+            if (tokenType == null) {
+                error("Caractere inesperado '" + c + "'", "Remova isso.",DiagnosticType.LEXICAL);
             }
 
             tokens.add(new Token(tokenType));
@@ -323,6 +369,18 @@ public class Lexer {
         return Character.isLetter(c) || Character.isDigit(c);
     }
 
+    /**
+    * @return Returns whether there is a next digit charater.
+    */
+    private boolean hasNextDigit(){
+        if (EOF()){
+	    return false;
+	}
+
+
+	char c = source.charAt(position + 1);
+	return Character.isDigit(c) || c == 'e' || c == '.';
+    }
     /**
      * @return Returns the next character.
      */

@@ -1,4 +1,10 @@
 @Use("c")
+public static void testeNumbers(){
+	integer x = 10e23;
+	integer y = 12.8jkw;
+}
+
+@Use("c")
 public static Array<Integer> build(integer n) {
     if (n <= 0) {
         println("Using fallback size 10");
