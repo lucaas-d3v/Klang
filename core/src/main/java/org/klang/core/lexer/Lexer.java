@@ -103,9 +103,9 @@ public class Lexer {
                 continue;
             }
 
-	    TokenType tokenType = tokensTypeByChar.getOrDefault(c, null);
-            
-	    switch (c) {
+            TokenType tokenType = tokensTypeByChar.getOrDefault(c, null);
+
+            switch (c) {
                 case '=' -> {
                     if (getNext() == '=') {
                         tokens.add(new Token(TokenType.DOUBLEEQUAL));
@@ -131,8 +131,8 @@ public class Lexer {
                 }
 
                 case '-' -> {
-		    // Cache the next character to avoid consuming it multiple times
-		    char next = getNext();
+                    // Cache the next character to avoid consuming it multiple times
+                    char next = getNext();
 
                     if (next == '-') {
                         tokens.add(new Token(TokenType.DECREMENT));
@@ -153,17 +153,17 @@ public class Lexer {
                     continue;
                 }
 
-		case '*' -> {
-		   if (getNext() == c){
-			tokens.add(new Token(TokenType.POWER));
+                case '*' -> {
+                    if (getNext() == c) {
+                        tokens.add(new Token(TokenType.POWER));
 
-			position++;
-			continue;
-		   }
+                        position++;
+                        continue;
+                    }
 
-		   tokens.add(new Token(tokenType));
-		   continue;
-		}
+                    tokens.add(new Token(tokenType));
+                    continue;
+                }
 
                 case '>' -> {
                     if (getNext() == '=') {
@@ -189,51 +189,51 @@ public class Lexer {
                     continue;
                 }
 
-		case '!' -> {
-		    if (getNext() == '='){
-			tokens.add(new Token(TokenType.NOTEQUAL));
-			position++;
+                case '!' -> {
+                    if (getNext() == '=') {
+                        tokens.add(new Token(TokenType.NOTEQUAL));
+                        position++;
 
-			continue;
-		    }
+                        continue;
+                    }
 
-		    tokens.add(new Token(TokenType.BANG));
-		    continue;
-		}
+                    tokens.add(new Token(TokenType.BANG));
+                    continue;
+                }
 
-		case '&' -> {
-		    if (getNext() == c){
-			tokens.add(new Token(TokenType.AND));
-			position++;
+                case '&' -> {
+                    if (getNext() == c) {
+                        tokens.add(new Token(TokenType.AND));
+                        position++;
 
-			continue;
-		    }
+                        continue;
+                    }
 
-		    error("Caractere \'" + c + "\' ineperado.", "Você quis dizer '&&'?", DiagnosticType.LEXICAL);
-		}
+                    error("Caractere \'" + c + "\' ineperado.", "Você quis dizer '&&'?", DiagnosticType.LEXICAL);
+                }
 
-		case '|' -> {
-                    if (getNext() == c){
+                case '|' -> {
+                    if (getNext() == c) {
                         tokens.add(new Token(TokenType.OR));
                         position++;
 
-			continue;
-		    }
+                        continue;
+                    }
 
-                    error("Caractere \'" + c + "\' ineperado.", "Você quis dizer '|'?", DiagnosticType.LEXICAL);
+                    error("Caractere \'" + c + "\' ineperado.", "Você quis dizer '||'?", DiagnosticType.LEXICAL);
                 }
             }
 
             if (tokenType == null) {
-                error("Caractere inesperado '" + c + "'", "Remova isso.",DiagnosticType.LEXICAL);
+                error("Caractere inesperado '" + c + "'", "Remova isso.", DiagnosticType.LEXICAL);
             }
 
             tokens.add(new Token(tokenType));
             position++;
         }
 
+        tokens.add(new Token(TokenType.EOF));
         return tokens;
-
     }
 
     /**
@@ -371,17 +371,17 @@ public class Lexer {
     }
 
     /**
-    * @return Returns whether there is a next digit charater.
-    */
-    private boolean hasNextDigit(){
-        if (EOF()){
-	    return false;
-	}
+     * @return Returns whether there is a next digit charater.
+     */
+    private boolean hasNextDigit() {
+        if (EOF()) {
+            return false;
+        }
 
-
-	char c = source.charAt(position + 1);
-	return Character.isDigit(c) || c == 'e' || c == '.';
+        char c = source.charAt(position + 1);
+        return Character.isDigit(c) || c == 'e' || c == '.';
     }
+
     /**
      * @return Returns the next character.
      */
