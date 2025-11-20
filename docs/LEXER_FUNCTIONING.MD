@@ -64,6 +64,9 @@
 - BOOLEAN
 - CHARACTER
 - STRING
+- VOID
+- FRESH // at new
+
 
 ## Special
 - AT              @

@@ -18,88 +18,85 @@ public class Lexer {
     HashMap<String, TokenType> tokensTypeByString = new HashMap<>();
     HashMap<Character, TokenType> tokensTypeByChar = new HashMap<>();
 
+    /**
+     * Tokenizes the source code into a list of tokens.
+     * 
+     * @return List of tokens extracted from the source code
+     */
     public List<Token> tokenize() {
-        StringBuilder s = new StringBuilder();
+        while (!isAtEnd()) {
+            char c = peek();
 
-        while (!EOF()) {
-            s.setLength(0); // Limpar builder
-            char c = source.charAt(position);
-            column++;
-
+            // whitespace
             if (Character.isWhitespace(c)) {
-                position++;
-
-                if (isNewLine(c)) {
+                advance();
+                if (c == '\n') {
                     line++;
                     column = 0;
                 }
-
                 continue;
             }
 
-            if (c == '\"') {
-                s.append(c);
-                s.append(readString(c));
-                s.append(c);
-                position++;
-
-                tokens.add(new Token(TokenType.STRING, s.toString()));
-
+            // strings
+            if (c == '"') {
+                advance(); // consume opening quote
+                String content = readString(); // now readString doesn't know about the quote
+                tokens.add(new Token(TokenType.STRING_LITERAL, content));
                 continue;
             }
 
+            // char literal
             if (c == '\'') {
-                s.append(c);
-                s.append(readCharacter(c));
-                s.append(c);
-                position++;
-
-                tokens.add(new Token(TokenType.CHARACTER, s.toString()));
-
+                advance(); // consume opening apostrophe
+                String content = readCharacter();
+                tokens.add(new Token(TokenType.CHARACTER_LITERAL, content));
                 continue;
             }
 
-            if (Character.isLetter(c)) {
-                s.append(c);
+            // identifiers / keywords
+            if (Character.isLetter(c) || c == '_') {
+                String ident = readIdentifier();
 
-                while (hasNext()) {
-                    position++;
-                    char demaisChars = source.charAt(position);
+                TokenType type = tokensTypeByString.getOrDefault(ident, TokenType.IDENTIFIER);
 
-                    s.append(demaisChars);
-                }
-
-                String value = s.toString();
-
-                TokenType tokenType = tokensTypeByString.getOrDefault(value, TokenType.IDENTIFIER);
-
-                if (tokenType == TokenType.IDENTIFIER) {
-                    tokens.add(new Token(tokenType, value));
-
-                } else {
-                    tokens.add(new Token(tokenType));
-                }
-
-                position++;
+                if (type == TokenType.IDENTIFIER)
+                    tokens.add(new Token(type, ident));
+                else
+                    tokens.add(new Token(type));
                 continue;
             }
 
+            // numbers
             if (Character.isDigit(c)) {
+                String num = readNumber();
+                tokens.add(new Token(TokenType.NUMBER, num));
+                continue;
+            }
 
-                s.append(c);
+            if (peek() == '/' && peekNext() == '/') {
+                // line comment
+                advance();
+                advance(); // consume '//'
+                while (!isAtEnd() && peek() != '\n')
+                    advance();
+                continue;
+            }
 
-                while (hasNextDigit()) {
-                    position++;
-                    char demais = source.charAt(position);
-
-                    s.append(demais);
+            if (peek() == '/' && peekNext() == '*') {
+                advance();
+                advance(); // consume '/*'
+                while (!isAtEnd()) {
+                    if (peek() == '*' && peekNext() == '/') {
+                        advance();
+                        advance(); // consume '*/'
+                        break;
+                    }
+                    if (peek() == '\n') {
+                        line++;
+                        column = 0;
+                    }
+                    advance();
                 }
-
-                String value = s.toString();
-
-                tokens.add(new Token(TokenType.NUMBER, value));
-                position++;
-
                 continue;
             }
 
@@ -107,129 +104,136 @@ public class Lexer {
 
             switch (c) {
                 case '=' -> {
-                    if (getNext() == '=') {
-                        tokens.add(new Token(TokenType.DOUBLEEQUAL));
-                        position++;
+                    advance();
 
-                        continue;
+                    if (match('=')) {
+                        tokens.add(new Token(TokenType.DOUBLEEQUAL));
+                    } else {
+                        tokens.add(new Token(tokenType));
                     }
 
-                    tokens.add(new Token(tokenType));
                     continue;
                 }
 
                 case '+' -> {
-                    if (getNext() == '+') {
+                    advance();
+                    if (match('+')) {
                         tokens.add(new Token(TokenType.INCREMENT));
-                        position++;
 
-                        continue;
+                    } else {
+                        tokens.add(new Token(tokenType));
                     }
 
-                    tokens.add(new Token(tokenType));
                     continue;
+
                 }
 
                 case '-' -> {
-                    // Cache the next character to avoid consuming it multiple times
-                    char next = getNext();
-
-                    if (next == '-') {
+                    advance();
+                    if (match('-')) {
                         tokens.add(new Token(TokenType.DECREMENT));
-                        position++;
 
-                        continue;
-                    }
-
-                    if (next == '>') {
+                    } else if (match('>')) {
                         tokens.add(new Token(TokenType.ARROW));
-                        position++;
 
-                        continue;
-
+                    } else {
+                        tokens.add(new Token(tokenType));
                     }
 
-                    tokens.add(new Token(tokenType));
                     continue;
                 }
 
                 case '*' -> {
-                    if (getNext() == c) {
+                    advance();
+                    if (match('*')) {
                         tokens.add(new Token(TokenType.POWER));
 
-                        position++;
-                        continue;
+                    } else {
+                        tokens.add(new Token(tokenType));
                     }
 
-                    tokens.add(new Token(tokenType));
+                    continue;
+                }
+
+                case '/' -> {
+                    advance();
+                    tokens.add(new Token(TokenType.DIVISION));
                     continue;
                 }
 
                 case '>' -> {
-                    if (getNext() == '=') {
-                        tokens.add(new Token(TokenType.GTE));
-                        position++;
+                    advance();
 
-                        continue;
+                    if (match('=')) {
+                        tokens.add(new Token(TokenType.GTE));
+
+                    } else {
+                        tokens.add(new Token(tokenType));
+
                     }
 
-                    tokens.add(new Token(tokenType));
                     continue;
                 }
 
                 case '<' -> {
-                    if (getNext() == '=') {
-                        tokens.add(new Token(TokenType.LTE));
-                        position++;
+                    advance();
 
-                        continue;
+                    if (match('=')) {
+                        tokens.add(new Token(TokenType.LTE));
+
+                    } else {
+                        tokens.add(new Token(tokenType));
+
                     }
 
-                    tokens.add(new Token(tokenType));
                     continue;
                 }
 
                 case '!' -> {
-                    if (getNext() == '=') {
-                        tokens.add(new Token(TokenType.NOTEQUAL));
-                        position++;
+                    advance();
 
-                        continue;
+                    if (match('=')) {
+                        tokens.add(new Token(TokenType.NOTEQUAL));
+
+                    } else {
+                        tokens.add(new Token(TokenType.BANG));
+
                     }
 
-                    tokens.add(new Token(TokenType.BANG));
                     continue;
                 }
 
                 case '&' -> {
-                    if (getNext() == c) {
+                    advance();
+
+                    if (match('&')) {
                         tokens.add(new Token(TokenType.AND));
-                        position++;
 
                         continue;
                     }
 
-                    error("Caractere \'" + c + "\' ineperado.", "Você quis dizer '&&'?", DiagnosticType.LEXICAL);
+                    error("Unexpected character '" + c + "'.", "Did you mean '&&'?", DiagnosticType.LEXICAL);
+
                 }
 
                 case '|' -> {
-                    if (getNext() == c) {
+                    advance(); // consume first '|'
+                    if (match('|')) { // check/consume second '|'
                         tokens.add(new Token(TokenType.OR));
-                        position++;
-
-                        continue;
+                    } else {
+                        error("Unexpected character '|'", "Did you mean '||'?", DiagnosticType.LEXICAL);
                     }
-
-                    error("Caractere \'" + c + "\' ineperado.", "Você quis dizer '||'?", DiagnosticType.LEXICAL);
+                    continue;
                 }
+
             }
 
             if (tokenType == null) {
-                error("Caractere inesperado '" + c + "'", "Remova isso.", DiagnosticType.LEXICAL);
+                error("Unexpected character '" + c + "'", "Remove this.", DiagnosticType.LEXICAL);
             }
 
             tokens.add(new Token(tokenType));
-            position++;
+            advance();
         }
 
         tokens.add(new Token(TokenType.EOF));
@@ -237,93 +241,233 @@ public class Lexer {
     }
 
     /**
-     * @return Returns the string between "" from cAtual (cAtual is included and
-     *         should be = \").
+     * Checks if the lexer has reached the end of the source code.
      * 
-     * @param cCurrent Current character
+     * @return true if at end of source, false otherwise
      */
-    private String readString(char cAtual) {
+    private boolean isAtEnd() {
+        return position >= source.length();
+    }
+
+    /**
+     * Peeks at the current character without consuming it.
+     * 
+     * @return Current character or '\0' if at end of source
+     */
+    private char peek() {
+        if (isAtEnd())
+            return '\0';
+
+        return source.charAt(position);
+    }
+
+    /**
+     * Peeks at the next character without consuming it.
+     * 
+     * @return Next character or '\0' if beyond source bounds
+     */
+    private char peekNext() {
+        if (position + 1 >= source.length())
+            return '\0';
+        return source.charAt(position + 1);
+    }
+
+    /**
+     * Advances to the next character and updates position and column.
+     * 
+     * @return The character that was just consumed
+     */
+    private char advance() {
+        char c = peek();
+        position++;
+        column++;
+        return c;
+    }
+
+    /**
+     * Checks if the current character matches the expected character and consumes
+     * it if so.
+     * 
+     * @param expected The character to match
+     * @return true if matched and consumed, false otherwise
+     */
+    private boolean match(char expected) {
+        if (isAtEnd())
+            return false;
+        if (peek() != expected)
+            return false; // look at current character (after a previous advance())
+        advance(); // consume this character
+        return true;
+    }
+
+    /**
+     * Reads a string literal from the source code, handling escape sequences.
+     * 
+     * @return The string content without the surrounding quotes
+     */
+    private String readString() {
         StringBuilder s = new StringBuilder();
 
-        position++;
-        char c = source.charAt(position);
+        while (!isAtEnd()) {
+            char c = advance();
 
-        while (c != '\"') {
+            // String closed
+            if (c == '"') {
+                return s.toString();
+            }
+
+            // Multiline not allowed
+            if (c == '\n') {
+                error("String cannot contain line break.",
+                        "Close the string before the end of the line.",
+                        DiagnosticType.LEXICAL);
+            }
+
+            // Escape
             if (c == '\\') {
-                position++;
-                if (position >= source.length()) {
-                    Span span = new Span(filePath, line, column, line, column + 1);
-                    Diagnostic d = new Diagnostic(
-                            DiagnosticType.LEXICAL,
-                            "String não fechada: fim de arquivo inesperado",
-                            span).addNote(new Note("Esperado \""));
-
-                    throw new DiagnosticException(d);
+                if (isAtEnd()) {
+                    error("Unclosed string: unexpected end of file",
+                            "Expected \"",
+                            DiagnosticType.LEXICAL);
                 }
-                char escaped = source.charAt(position);
-                s.append('\\').append(escaped);
-            } else {
-                s.append(c);
+
+                char escaped = advance();
+
+                switch (escaped) {
+                    case 'n' -> s.append("\\n");
+                    case 't' -> s.append("\\t");
+                    case '"' -> s.append("\\\"");
+                    case '\\' -> s.append("\\\\");
+                    default -> error(
+                            "Invalid escape sequence: \\" + escaped,
+                            "Use valid escapes: \\n, \\t, \\\", \\\\.",
+                            DiagnosticType.LEXICAL);
+                }
+
+                continue;
             }
 
-            position++;
-
-            if (position >= source.length()) {
-                Span span = new Span(filePath, line, column, line, column + 1);
-                Diagnostic d = new Diagnostic(
-                        DiagnosticType.LEXICAL,
-                        "String não fechada: fim de arquivo inesperado",
-                        span).addNote(new Note("Esperado \""));
-
-                throw new DiagnosticException(d);
-            }
-
-            c = source.charAt(position);
+            // Normal character
+            s.append(c);
         }
 
+        error("Unclosed string: unexpected end of file",
+                "Expected \"",
+                DiagnosticType.LEXICAL);
+        return null; // unreachable
+    }
+
+    /**
+     * Reads a character literal from the source code, handling escape sequences.
+     * 
+     * @return The character content without the surrounding single quotes
+     */
+    private String readCharacter() {
+
+        if (isAtEnd()) {
+            error("Unclosed character.",
+                    "Expected '",
+                    DiagnosticType.LEXICAL);
+        }
+
+        char c = advance();
+
+        // Literal cannot have line break
+        if (c == '\n') {
+            error("Character literal cannot contain line break.",
+                    "Put only one valid character between ''.",
+                    DiagnosticType.LEXICAL);
+        }
+
+        String value;
+
+        if (c == '\\') {
+            if (isAtEnd()) {
+                error("Unclosed character.",
+                        "Expected '",
+                        DiagnosticType.LEXICAL);
+            }
+
+            char escaped = advance();
+
+            switch (escaped) {
+                case 'n' -> value = "\\n";
+                case 't' -> value = "\\t";
+                case '\'' -> value = "\\'";
+                case '\\' -> value = "\\\\";
+                default -> {
+                    error("Invalid escape: \\" + escaped,
+                            "Use valid escapes: \\n, \\t, \\', \\\\.",
+                            DiagnosticType.LEXICAL);
+                    return null; // unreachable
+                }
+            }
+        } else {
+            // Check if there are more characters without closing
+            if (peek() != '\'') {
+                error("Character literal with more than one character.",
+                        "A literal should be like 'a' or '\\n'.",
+                        DiagnosticType.LEXICAL);
+            }
+            value = String.valueOf(c);
+        }
+
+        // Expected closing '
+        if (isAtEnd() || peek() != '\'') {
+            error("Unclosed character.",
+                    "Expected '",
+                    DiagnosticType.LEXICAL);
+        }
+
+        advance(); // consume the '
+
+        return value;
+    }
+
+    /**
+     * Reads an identifier or keyword from the source code.
+     * 
+     * @return The identifier string
+     */
+    private String readIdentifier() {
+        StringBuilder s = new StringBuilder();
+        s.append(advance()); // consumes first char (letter or '_')
+        while (Character.isLetterOrDigit(peek()) || peek() == '_') {
+            s.append(advance());
+        }
         return s.toString();
     }
 
     /**
-     * @return Returns the char between '', it is returned as String as there is no
-     *         use as char.
+     * Reads a number (integer or decimal) from the source code.
      * 
-     * @param cCurrent Current character
+     * @return The number as a string
      */
-    private String readCharacter(char cAtual) {
+    private String readNumber() {
         StringBuilder s = new StringBuilder();
 
-        position++;
-        int lengthCharacter = 0;
-        char c = source.charAt(position);
+        while (Character.isDigit(peek())) {
+            s.append(advance());
+        }
 
-        while (c != '\'') {
-            if (lengthCharacter > 1) {
-                error("caractere maior que o esperado",
-                        "literais de caractere devem conter exatamente 1 caractere",
-                        DiagnosticType.LEXICAL);
-            }
-            if (c == '\\') {
-                position++;
+        // optional fraction
+        if (peek() == '.') {
+            if (Character.isDigit(peekNext())) {
 
-                if (position >= source.length()) {
-                    error("String não fechada: fim de arquivo inesperado", "Esperado \'", DiagnosticType.LEXICAL);
+                s.append(advance()); // consume '.'
+                while (Character.isDigit(peek())) {
+                    s.append(advance());
                 }
-
-                char escaped = source.charAt(position);
-                s.append('\\').append(escaped);
             } else {
-                s.append(c);
+                error("Invalid decimal", "After '.' there must be a digit", DiagnosticType.LEXICAL);
+
             }
+        }
 
-            position++;
-
-            if (position >= source.length()) {
-                error("String não fechada: fim de arquivo inesperado", "Esperado \'", DiagnosticType.LEXICAL);
-            }
-
-            c = source.charAt(position);
-            lengthCharacter++;
+        if (Character.isLetter(peek()) || peek() == '_') {
+            error("Number followed by invalid identifier.",
+                    "Identifiers cannot start with digits.",
+                    DiagnosticType.LEXICAL);
         }
 
         return s.toString();
@@ -332,9 +476,9 @@ public class Lexer {
     /**
      * Issues a formatted diagnostic error and throws an exception.
      *
-     * @param message   Error message that will be displayed.
-     * @param note      Note or tip on what to do to solve the problem.
-     * @param typeError Type of error to be issued (e.g., ERROR, WARNING).
+     * @param message   Error message that will be displayed
+     * @param note      Note or tip on what to do to solve the problem
+     * @param typeError Type of error to be issued (e.g., ERROR, WARNING)
      */
     private void error(String message, String note, DiagnosticType typeError) {
         Span span = new Span(filePath, line, column, line, column + 1);
@@ -343,64 +487,15 @@ public class Lexer {
                 message,
                 span).addNote(new Note(note));
 
-        // Imprime o erro formatado antes de lançar
+        // Print the formatted error before throwing
 
         throw new DiagnosticException(d);
     }
 
     /**
-     * @return Returns whether the current character is a line break.
-     * 
-     * @param c Current character.
+     * Initializes the hash maps that map strings and characters to their
+     * corresponding token types.
      */
-    private boolean isNewLine(char c) {
-        return c == '\n';
-
-    }
-
-    /**
-     * @return Returns whether there is a next character (letter or number).
-     */
-    private boolean hasNext() {
-        if (EOF()) {
-            return false;
-        }
-
-        char c = source.charAt(position + 1);
-        return Character.isLetter(c) || Character.isDigit(c);
-    }
-
-    /**
-     * @return Returns whether there is a next digit charater.
-     */
-    private boolean hasNextDigit() {
-        if (EOF()) {
-            return false;
-        }
-
-        char c = source.charAt(position + 1);
-        return Character.isDigit(c) || c == 'e' || c == '.';
-    }
-
-    /**
-     * @return Returns the next character.
-     */
-    private char getNext() {
-        if (EOF()) {
-            return '\0';
-        }
-
-        position++;
-        return source.charAt(position);
-    }
-
-    /**
-     * @return Returns whether this is the end of the source code.
-     */
-    private boolean EOF() {
-        return position >= source.length();
-    }
-
     private void initialzerhashMapTokensTypes() {
         // Keywords
         tokensTypeByString.put("return", TokenType.RETURN);
@@ -420,8 +515,12 @@ public class Lexer {
         tokensTypeByString.put("integer", TokenType.INTEGER);
         tokensTypeByString.put("double", TokenType.DOUBLE);
         tokensTypeByString.put("boolean", TokenType.BOOLEAN);
-        tokensTypeByString.put("character", TokenType.CHARACTER);
-        tokensTypeByString.put("String", TokenType.STRING);
+        tokensTypeByString.put("character", TokenType.CHARACTER_TYPE);
+        tokensTypeByString.put("void", TokenType.VOID);
+        tokensTypeByString.put("fresh", TokenType.FRESH);
+
+        // References
+        tokensTypeByString.put("String", TokenType.STRING_TYPE);
 
         // Single-Characters
         tokensTypeByChar.put('(', TokenType.LPAREN);
@@ -456,11 +555,17 @@ public class Lexer {
         tokensTypeByString.put("||", TokenType.OR);
         tokensTypeByString.put("->", TokenType.ARROW);
 
-        // Especials
+        // Specials
         tokensTypeByChar.put('@', TokenType.AT);
         tokensTypeByChar.put('\0', TokenType.EOF);
     }
 
+    /**
+     * Constructs a new Lexer with the given source code and file path.
+     * 
+     * @param source   The source code to tokenize
+     * @param filePath The path of the source file (for error reporting)
+     */
     public Lexer(String source, String filePath) {
         this.source = source;
         this.filePath = filePath;
@@ -468,6 +573,10 @@ public class Lexer {
         initialzerhashMapTokensTypes();
     }
 
+    /**
+     * Tests the tokenizer with a simple integer declaration.
+     * Prints all generated tokens to standard output.
+     */
     public void testTokenize() {
         this.source = "integer x = 10;";
 

@@ -19,6 +19,9 @@ It does not define standard library behavior or backend-specific semantics.
   - string: `"text"`
   - boolean: `true`, `false`
 
+> Klang v1 does not support scientific numeric literals (e.g., 1e10).
+> This will be considered a lexical error.
+
 ### 1.2 Comments
 - Single-line: `// comment`
 - Block: `/* comment */`

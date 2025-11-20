@@ -1,7 +1,7 @@
 @Use("c")
 public static void testeNumbers(){
-	integer x = 10e23;
-	integer y = 12.8jkw;
+	integer x = 10;
+	double y = 12.8;
 }
 
 @Use("c")
