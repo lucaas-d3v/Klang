@@ -7,6 +7,6 @@ public class VersionCommand implements Runnable {
 
     @Override
     public void run() {
-        System.out.println("Klang version 0.0.1-dev");
+        System.out.println("Klang version 0.1.0-dev");
     }
 }
