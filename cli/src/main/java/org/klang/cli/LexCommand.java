@@ -28,7 +28,7 @@ public class LexCommand implements Runnable {
         try {
             Path path = file.toPath();
 
-            if (!path.endsWith(".k")) {
+            if (!path.getFileName().toString().endsWith(".k")) {
                 Diagnostic d = new Diagnostic(
                         DiagnosticType.INFO,
                         "The file is not a .k file.",
