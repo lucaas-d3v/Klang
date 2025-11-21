@@ -2,7 +2,7 @@ package org.klang.cli;
 
 import picocli.CommandLine.Command;
 
-@Command(name = "--version", description = "Mostra a versão da Klang")
+@Command(name = "--version", description = "Show Klang version")
 public class VersionCommand implements Runnable {
 
     @Override

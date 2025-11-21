@@ -5,13 +5,13 @@ import picocli.CommandLine;
 
 import picocli.AutoComplete;
 
-@Command(name = "gen-completion", description = "Gera script de autocompletar para bash/zsh")
+@Command(name = "gen-completion", description = "Generate autocomplete script for bash/zsh")
 public class GenerateCompletion implements Runnable {
 
     @Override
     public void run() {
         CommandLine cmd = new CommandLine(new KMain());
-        String script = AutoComplete.bash("k", cmd);
+        String script = AutoComplete.bash("kc", cmd);
         System.out.println(script);
     }
 }

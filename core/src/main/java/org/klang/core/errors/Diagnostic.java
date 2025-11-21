@@ -8,9 +8,9 @@ import java.util.Objects;
 public final class Diagnostic {
     public final DiagnosticType type;
     public final String message;
-    public final Span primarySpan;
-    private final List<Span> secondarySpans;
-    private final List<Note> notes;
+    public Span primarySpan;
+    private List<Span> secondarySpans;
+    private List<Note> notes;
 
     public Diagnostic(DiagnosticType type, String message, Span primarySpan) {
         this.type = Objects.requireNonNull(type, "type não pode ser null");
@@ -18,6 +18,12 @@ public final class Diagnostic {
         this.primarySpan = Objects.requireNonNull(primarySpan, "primarySpan não pode ser null");
         this.secondarySpans = new ArrayList<>();
         this.notes = new ArrayList<>();
+    }
+
+    public Diagnostic(DiagnosticType type, String message) {
+        this.type = type;
+        this.message = message;
+
     }
 
     public Diagnostic addSecondarySpan(Span span) {
