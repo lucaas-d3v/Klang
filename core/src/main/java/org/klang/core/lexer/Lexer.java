@@ -55,8 +55,11 @@ public class Lexer {
 
             // identifiers / keywords
             if (Character.isLetter(c) || c == '_' || c == '$') {
-                String ident = readIdentifier();
+                if (c == '$' && !(Character.isLetter(peekNext()) || peekNext() == '_')) {
+                    error("Unexpected character '" + c + "'", "Remove this.", DiagnosticType.LEXICAL);
+                }
 
+                String ident = readIdentifier();
                 TokenType type = tokensTypeByString.getOrDefault(ident, TokenType.IDENTIFIER);
 
                 if (type == TokenType.IDENTIFIER)
@@ -432,6 +435,7 @@ public class Lexer {
     private String readIdentifier() {
         StringBuilder s = new StringBuilder();
         s.append(advance()); // consumes first char (letter or '_')
+
         while (Character.isLetterOrDigit(peek()) || peek() == '_') {
             s.append(advance());
         }
@@ -494,7 +498,7 @@ public class Lexer {
      * @param typeError Type of error to be issued (e.g., ERROR, WARNING)
      */
     private void error(String message, String note, DiagnosticType typeError) {
-        Span span = new Span(filePath, line, column, line, column + 1);
+        Span span = new Span(filePath, line, column + 1, line, column + 2);
         Diagnostic d = new Diagnostic(
                 typeError,
                 message,
