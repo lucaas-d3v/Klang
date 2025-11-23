@@ -5,40 +5,29 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
+/**
+ * Represents a diagnosis (message + spans + notes).
+ * Designed to be built fluidly.
+ */
 public final class Diagnostic {
     public final DiagnosticType type;
     public final String message;
-    public Span primarySpan;
-    private List<Span> secondarySpans;
-    private List<Note> notes;
+    public final Span primarySpan; // can be null
+    private final List<Span> secondarySpans;
+    private final List<Note> notes;
 
-    public Diagnostic(DiagnosticType type, String message, Span primarySpan) {
-        this.type = Objects.requireNonNull(type, "type não pode ser null");
-        this.message = Objects.requireNonNull(message, "message não pode ser null");
-        this.primarySpan = Objects.requireNonNull(primarySpan, "primarySpan não pode ser null");
-        this.secondarySpans = new ArrayList<>();
-        this.notes = new ArrayList<>();
+    public Diagnostic(DiagnosticType type, String message, Span primarySpan,
+            List<Span> secondarySpans, List<Note> notes) {
+        this.type = Objects.requireNonNull(type);
+        this.message = Objects.requireNonNull(message);
+        this.primarySpan = primarySpan;
+        this.secondarySpans = secondarySpans == null ? List.of() : List.copyOf(secondarySpans);
+        this.notes = notes == null ? List.of() : List.copyOf(notes);
     }
 
-    public Diagnostic(DiagnosticType type, String message) {
-        this.type = type;
-        this.message = message;
-
-    }
-
-    public Diagnostic addSecondarySpan(Span span) {
-        if (span != null) {
-            this.secondarySpans.add(span);
-        }
-
-        return this;
-    }
-
-    public Diagnostic addNote(Note note) {
-        if (note != null) {
-            this.notes.add(note);
-        }
-        return this;
+    // Builder helpers
+    public static Builder builder(DiagnosticType type, String message) {
+        return new Builder(type, message);
     }
 
     public List<Span> secondarySpans() {
@@ -49,11 +38,41 @@ public final class Diagnostic {
         return Collections.unmodifiableList(notes);
     }
 
-    public boolean hasSecondarySpans() {
-        return !secondarySpans.isEmpty();
+    public boolean hasPrimarySpan() {
+        return primarySpan != null;
     }
 
-    public boolean hasNotes() {
-        return !notes.isEmpty();
+    public static final class Builder {
+        private final DiagnosticType type;
+        private final String message;
+        private Span primary;
+        private final List<Span> secondaries = new ArrayList<>();
+        private final List<Note> notes = new ArrayList<>();
+
+        public Builder(DiagnosticType type, String message) {
+            this.type = type;
+            this.message = message;
+        }
+
+        public Builder primary(Span s) {
+            this.primary = s;
+            return this;
+        }
+
+        public Builder addSecondary(Span s) {
+            if (s != null)
+                secondaries.add(s);
+            return this;
+        }
+
+        public Builder addNote(Note n) {
+            if (n != null)
+                notes.add(n);
+            return this;
+        }
+
+        public Diagnostic build() {
+            return new Diagnostic(type, message, primary, secondaries, notes);
+        }
     }
 }

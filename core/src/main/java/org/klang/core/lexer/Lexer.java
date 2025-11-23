@@ -497,14 +497,13 @@ public class Lexer {
      * @param note      Note or tip on what to do to solve the problem
      * @param typeError Type of error to be issued (e.g., ERROR, WARNING)
      */
-    private void error(String message, String note, DiagnosticType typeError) {
+    public void error(String message, String note, DiagnosticType typeError) {
         Span span = new Span(filePath, line, column + 1, line, column + 2);
-        Diagnostic d = new Diagnostic(
-                typeError,
-                message,
-                span).addNote(new Note(note));
 
-        // Print the formatted error before throwing
+        Diagnostic d = Diagnostic.builder(typeError, message)
+                .primary(span)
+                .addNote(new Note(note))
+                .build();
 
         throw new DiagnosticException(d);
     }

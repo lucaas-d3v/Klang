@@ -9,7 +9,7 @@ import java.nio.file.Path;
 
 import org.klang.core.errors.Diagnostic;
 import org.klang.core.errors.DiagnosticException;
-import org.klang.core.errors.DiagnosticFormatter;
+import org.klang.core.errors.DiagnosticPrinter;
 import org.klang.core.errors.DiagnosticType;
 import org.klang.core.errors.Note;
 import org.klang.core.errors.Span;
@@ -21,21 +21,19 @@ public class LexCommand implements Runnable {
     @Parameters(paramLabel = "FILE")
     private File file;
 
-    private final DiagnosticFormatter formatter = new DiagnosticFormatter();
-
     @Override
     public void run() {
         try {
             Path path = file.toPath();
 
             if (!path.getFileName().toString().endsWith(".k")) {
-                Diagnostic d = new Diagnostic(
-                        DiagnosticType.INFO,
-                        "The file is not a .k file.",
-                        new Span(path.toString(), 2, 2, 2, 2))
-                        .addNote(new Note("You probably gave incorrect information."));
 
-                // Print the formatted error before throwing
+                Span span = new Span(null, 1, 1, 1, 1); // fileless → works in any context
+
+                Diagnostic d = Diagnostic.builder(DiagnosticType.ERROR, "The file must be a .k file")
+                        .primary(span)
+                        .addNote(new Note("Maybe you got confused with another file type?"))
+                        .build();
 
                 throw new DiagnosticException(d);
             }
@@ -45,14 +43,16 @@ public class LexCommand implements Runnable {
             Lexer lexer = new Lexer(source, file.getPath());
             lexer.tokenize().forEach(System.out::println);
 
-            // Provavelmente na sua Main ou CLI
         } catch (DiagnosticException e) {
-            formatter.print(e.diagnostic);
+            DiagnosticPrinter printer = new DiagnosticPrinter(true, true);
+            printer.print(e.diagnostic);
 
+            System.exit(1);
         } catch (Exception e) {
-            // erro inesperado → mostrar stacktrace (para debug)
+            // unexpected errors → stacktrace
             e.printStackTrace();
             System.exit(2);
         }
     }
+
 }
