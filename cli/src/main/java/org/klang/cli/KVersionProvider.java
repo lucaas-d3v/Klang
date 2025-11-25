@@ -26,7 +26,7 @@ public class KVersionProvider implements IVersionProvider {
 
     private String formatHeader() {
         return WINE + BOLD + "KLANG" + RESET +
-                " " + "• 0.1.7-dev" + RESET;
+                " " + "• 0.1.8-dev" + RESET;
     }
 
     private String formatEntry(String label, String value) {

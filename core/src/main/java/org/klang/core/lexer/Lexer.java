@@ -529,10 +529,13 @@ public class Lexer {
         tokensTypeByString.put("true", TokenType.TRUE);
         tokensTypeByString.put("false", TokenType.FALSE);
         tokensTypeByString.put("integer", TokenType.INTEGER);
+	tokensTypeByString.put("try", TokenType.TRY);
+	tokensTypeByString.put("catch", TokenType.CATCH);
         tokensTypeByString.put("double", TokenType.DOUBLE);
         tokensTypeByString.put("boolean", TokenType.BOOLEAN);
         tokensTypeByString.put("character", TokenType.CHARACTER_TYPE);
         tokensTypeByString.put("void", TokenType.VOID);
+	tokensTypeByString.put("null", TokenType.NULL);
         tokensTypeByString.put("fresh", TokenType.FRESH);
 
         // References

@@ -27,3 +27,7 @@ public static void main(Array<String> args) {
     }
                                                                                                                                            
 }
+
+null
+try {} catch {}
+
