@@ -26,6 +26,8 @@ public class UpdateCommand implements Runnable {
     private static final String[] FRAMES = { "⦿", "⦾" };
     private volatile boolean spinning = true;
 
+    private final String PROJECT_DIR = System.getProperty("user.home") + "/Klang";
+
     @Override
     public void run() {
         System.out.println();
@@ -40,7 +42,7 @@ public class UpdateCommand implements Runnable {
         Thread t = new Thread(() -> {
             int i = 0;
             while (spinning) {
-                System.out.print("\r  " + GRAY + "Updating… " + RESET + FRAMES[i % FRAMES.length]);
+                System.out.print("\r  " + GRAY + " Updating… " + RESET + FRAMES[i % FRAMES.length]);
                 System.out.flush(); // ← Adicione isso para garantir que apareça imediatamente
                 i++;
                 try {
@@ -67,7 +69,12 @@ public class UpdateCommand implements Runnable {
     }
 
     private void update() {
-        final String PROJECT_DIR = System.getProperty("user.home") + "/Klang";
+        updateProjectGit();
+        updateCli();
+        updateinstallCLi();
+    }
+
+    private void updateProjectGit() {
         File dir = new File(PROJECT_DIR);
 
         if (!dir.exists()) {
@@ -116,6 +123,109 @@ public class UpdateCommand implements Runnable {
                     "Failed to execute update: " + e.getMessage())
                     .primary(new Span(null, 1, 1, 1, 1))
                     .addNote(new Note("This usually happens when git is missing or corrupted."))
+                    .build();
+
+            throw new DiagnosticException(d);
+        }
+    }
+
+    private void updateCli() {
+
+        ProcessBuilder pb = new ProcessBuilder("./gradlew", ":cli:shadowJar");
+        pb.inheritIO();
+
+        try {
+            Process proc = pb.start();
+            int exit = proc.waitFor();
+
+            stopSpinner();
+
+            if (exit != 0) {
+                System.out.println("  " + RED + " - Update cli failed" + RESET);
+
+                Diagnostic d = Diagnostic.builder(DiagnosticType.ERROR,
+                        "git pull failed (exit=" + exit + ")")
+                        .primary(new Span(null, 1, 1, 1, 1))
+                        .addNote(new Note("Run './gradlew --status' inside the project to diagnose the problem."))
+                        .build();
+
+                throw new DiagnosticException(d);
+            }
+
+            System.out.println("  " + GREEN + " - Updated cli successfully." + RESET);
+
+        } catch (IOException | InterruptedException e) {
+
+            stopSpinner();
+            System.out.println("  " + RED + " - Update cli failed" + RESET);
+
+            Diagnostic d = Diagnostic.builder(DiagnosticType.ERROR,
+                    "Failed to execute update: " + e.getMessage())
+                    .primary(new Span(null, 1, 1, 1, 1))
+                    .addNote(new Note("This usually happens when gradlew is missing or corrupted."))
+                    .build();
+
+            throw new DiagnosticException(d);
+        }
+    }
+
+    private void updateinstallCLi() {
+        File dir = new File(PROJECT_DIR);
+
+        if (!dir.exists()) {
+            stopSpinner();
+
+            Diagnostic d = Diagnostic.builder(DiagnosticType.INFO,
+                    "The path '" + PROJECT_DIR + "' does not exist.")
+                    .addNote(new Note("Try cloning the repository again."))
+                    .primary(new Span(null, 1, 1, 1, 1))
+                    .build();
+
+            System.out.println("  " + RED + " - Path not found" + RESET);
+            throw new DiagnosticException(d);
+        }
+
+        String osName = System.getProperty("os.name");
+        String command;
+        if (osName != null && osName.toLowerCase().startsWith("windows")) {
+            command = "install.bat";
+        } else {
+            command = "./install.sh";
+        }
+
+        ProcessBuilder pb = new ProcessBuilder(command);
+        pb.directory(dir);
+        pb.inheritIO();
+
+        try {
+            Process proc = pb.start();
+            int exit = proc.waitFor();
+
+            stopSpinner();
+
+            if (exit != 0) {
+                System.out.println("  " + RED + " - Update cli failed" + RESET);
+
+                Diagnostic d = Diagnostic.builder(DiagnosticType.ERROR,
+                        "git pull failed (exit=" + exit + ")")
+                        .primary(new Span(null, 1, 1, 1, 1))
+                        .addNote(new Note("Open an issue at https://github.com/KlangLang/Klang reporting the problem."))
+                        .build();
+
+                throw new DiagnosticException(d);
+            }
+
+            System.out.println("  " + GREEN + " - Updated cli successfully." + RESET);
+
+        } catch (IOException | InterruptedException e) {
+
+            stopSpinner();
+            System.out.println("  " + RED + " - Update cli failed" + RESET);
+
+            Diagnostic d = Diagnostic.builder(DiagnosticType.ERROR,
+                    "Failed to execute update: " + e.getMessage())
+                    .primary(new Span(null, 1, 1, 1, 1))
+                    .addNote(new Note("This usually happens when " + command + " is missing or corrupted."))
                     .build();
 
             throw new DiagnosticException(d);
